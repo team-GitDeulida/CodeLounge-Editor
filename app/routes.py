@@ -31,19 +31,33 @@ def add_entry():
     if not all([category, title, author, time, content]):
         return jsonify({"error": "All fields are required"}), 400
 
-    # Firebase에 데이터 추가
     try:
+        # 카테고리 아래 모든 키 가져오기
+        existing_keys = db.child(category).get().val() or {}
+        
+        # 가장 큰 "No-{number}" 찾기
+        max_number = 0
+        for key in existing_keys.keys():
+            if key.startswith("No-") and key[3:].isdigit():
+                max_number = max(max_number, int(key[3:]))
+
+        # 새 번호 생성
+        new_number = max_number + 1 if max_number > 0 else 1
+        new_key = f"No-{new_number}"
+
+        # 새로운 데이터 추가
         new_entry = {
             "title": title,
             "author_id": author,
             "created_at": time,
             "content": content,
         }
-        db.child(category).push(new_entry)  # 카테고리에 새 데이터 추가
-        return jsonify({"success": True}), 200
+        db.child(category).child(new_key).set(new_entry)
+
+        return jsonify({"success": True, "new_key": new_key}), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
-
+        
 @app.route("/update-entry", methods=["POST"])
 def update_entry():
     data = request.json
