@@ -181,6 +181,19 @@
         let selectedCategory = "";
         let selectedTitleKey = ""; // 기존 타이틀 키 (수정/삭제 시 사용)
 
+                // 한국 시간을 ISO 형식으로 반환
+        function getKoreanTime() {
+            const now = new Date();
+            const offset = 9 * 60 * 60 * 1000; // 한국 시간대 오프셋 (UTC+9)
+            const koreanTime = new Date(now.getTime() + offset);
+            return koreanTime.toISOString().slice(0, 19) + 'Z';
+        }
+
+        // 페이지 로드 시 한국 시간을 설정
+        document.addEventListener("DOMContentLoaded", function() {
+            document.getElementById("time").value = getKoreanTime();
+        });
+
         // 카테고리 자동완성
         function showCategorySuggestions(value) {
             const suggestionsDiv = document.getElementById("category-suggestions");
